@@ -21,8 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.thingsboard.server.common.data.exception.TenantNotFoundException;
 import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.QueueId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.msg.queue.ServiceType;
 import org.thingsboard.server.common.msg.queue.TopicPartitionInfo;
@@ -68,7 +68,7 @@ public class HashPartitionService implements PartitionService {
     private final TenantRoutingInfoService tenantRoutingInfoService;
     private final QueueRoutingInfoService queueRoutingInfoService;
 
-    private ConcurrentMap<QueueKey, List<Integer>> myPartitions = new ConcurrentHashMap<>();
+    private volatile ConcurrentMap<QueueKey, List<Integer>> myPartitions = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<QueueKey, String> partitionTopicsMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<QueueKey, Integer> partitionSizesMap = new ConcurrentHashMap<>();
@@ -193,6 +193,11 @@ public class HashPartitionService implements PartitionService {
         return resolve(serviceType, null, tenantId, entityId);
     }
 
+    @Override
+    public boolean isMyPartition(ServiceType serviceType, TenantId tenantId, EntityId entityId) {
+        return resolve(serviceType, tenantId, entityId).isMyPartition();
+    }
+
     private TopicPartitionInfo resolve(QueueKey queueKey, EntityId entityId) {
         int hash = hashFunction.newHasher()
                 .putLong(entityId.getId().getMostSignificantBits())
@@ -217,16 +222,18 @@ public class HashPartitionService implements PartitionService {
         }
         queueServicesMap.values().forEach(list -> list.sort(Comparator.comparing(ServiceInfo::getServiceId)));
 
-        ConcurrentMap<QueueKey, List<Integer>> oldPartitions = myPartitions;
-        myPartitions = new ConcurrentHashMap<>();
+        final ConcurrentMap<QueueKey, List<Integer>> newPartitions = new ConcurrentHashMap<>();
         partitionSizesMap.forEach((queueKey, size) -> {
             for (int i = 0; i < size; i++) {
                 ServiceInfo serviceInfo = resolveByPartitionIdx(queueServicesMap.get(queueKey), queueKey, i);
                 if (currentService.equals(serviceInfo)) {
-                    myPartitions.computeIfAbsent(queueKey, key -> new ArrayList<>()).add(i);
+                    newPartitions.computeIfAbsent(queueKey, key -> new ArrayList<>()).add(i);
                 }
             }
         });
+
+        final ConcurrentMap<QueueKey, List<Integer>> oldPartitions = myPartitions;
+        myPartitions = newPartitions;
 
         oldPartitions.forEach((queueKey, partitions) -> {
             if (!myPartitions.containsKey(queueKey)) {
@@ -362,7 +369,7 @@ public class HashPartitionService implements PartitionService {
             }
         }
         if (routingInfo == null) {
-            throw new RuntimeException("Tenant not found!");
+            throw new TenantNotFoundException(tenantId);
         }
         switch (serviceType) {
             case TB_RULE_ENGINE:

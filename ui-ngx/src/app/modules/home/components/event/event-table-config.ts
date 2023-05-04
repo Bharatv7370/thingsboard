@@ -252,6 +252,7 @@ export class EventTableConfig extends EntityTableConfig<Event, TimePageLink> {
               name: this.translate.instant('event.copy-entity-id'),
               icon: 'content_paste',
               style: {
+                padding: '4px',
                 'font-size': '16px',
                 color: 'rgba(0,0,0,.87)'
               },
@@ -268,6 +269,7 @@ export class EventTableConfig extends EntityTableConfig<Event, TimePageLink> {
               name: this.translate.instant('event.copy-message-id'),
               icon: 'content_paste',
               style: {
+                padding: '4px',
                 'font-size': '16px',
                 color: 'rgba(0,0,0,.87)'
               },
@@ -295,7 +297,7 @@ export class EventTableConfig extends EntityTableConfig<Event, TimePageLink> {
               onAction: ($event, entity) => this.showContent($event, entity.body.data,
                 'event.data', entity.body.dataType)
             },
-            '40px'),
+            '48px'),
           new EntityActionTableColumn<Event>('metadata', 'event.metadata',
             {
               name: this.translate.instant('action.view'),
@@ -304,7 +306,7 @@ export class EventTableConfig extends EntityTableConfig<Event, TimePageLink> {
               onAction: ($event, entity) => this.showContent($event, entity.body.metadata,
                 'event.metadata', ContentType.JSON, true)
             },
-            '40px'),
+            '48px'),
           new EntityActionTableColumn<Event>('error', 'event.error',
             {
               name: this.translate.instant('action.view'),
@@ -313,7 +315,7 @@ export class EventTableConfig extends EntityTableConfig<Event, TimePageLink> {
               onAction: ($event, entity) => this.showContent($event, entity.body.error,
                 'event.error')
             },
-            '40px')
+            '48px')
         );
         break;
       case DebugEventType.DEBUG_RULE_CHAIN:
@@ -327,7 +329,7 @@ export class EventTableConfig extends EntityTableConfig<Event, TimePageLink> {
               onAction: ($event, entity) => this.showContent($event, entity.body.message,
                 'event.message')
             },
-            '40px'),
+            '48px'),
           new EntityActionTableColumn<Event>('error', 'event.error',
             {
               name: this.translate.instant('action.view'),
@@ -336,7 +338,7 @@ export class EventTableConfig extends EntityTableConfig<Event, TimePageLink> {
               onAction: ($event, entity) => this.showContent($event, entity.body.error,
                 'event.error')
             },
-            '40px')
+            '48px')
         );
         break;
     }

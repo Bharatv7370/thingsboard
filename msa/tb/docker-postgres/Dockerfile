@@ -28,12 +28,12 @@ ENV PATH=$PATH:/usr/lib/postgresql/$PG_MAJOR/bin
 
 ENV SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/thingsboard
-ENV SPRING_DATASOURCE_USERNAME=${pkg.user}
+ENV SPRING_DATASOURCE_USERNAME=${pkg:user}
 ENV SPRING_DATASOURCE_PASSWORD=postgres
 
 ENV PGLOG=/var/log/postgres
 
-COPY logback.xml ${pkg.name}.conf start-db.sh stop-db.sh start-tb.sh upgrade-tb.sh install-tb.sh ${pkg.name}.deb /tmp/
+COPY logback.xml ${pkg:name}.conf start-db.sh stop-db.sh start-tb.sh upgrade-tb.sh install-tb.sh ${pkg:name}.deb /tmp/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends wget gnupg2 \
@@ -50,20 +50,20 @@ RUN apt-get update \
     && mv /tmp/install-tb.sh /usr/bin \
     && mv /tmp/start-db.sh /usr/bin \
     && mv /tmp/stop-db.sh /usr/bin \
-    && dpkg -i /tmp/${pkg.name}.deb \
-    && rm /tmp/${pkg.name}.deb \
+    && dpkg -i /tmp/${pkg:name}.deb \
+    && rm /tmp/${pkg:name}.deb \
     && (systemctl --no-reload disable --now ${pkg.name}.service > /dev/null 2>&1 || :) \
     && mv /tmp/logback.xml ${pkg.installFolder}/conf \
-    && mv /tmp/${pkg.name}.conf ${pkg.installFolder}/conf \
+    && mv /tmp/${pkg:name}.conf ${pkg.installFolder}/conf \
     && mkdir -p $PGLOG \
-    && chown -R ${pkg.user}:${pkg.user} $PGLOG \
-    && chown -R ${pkg.user}:${pkg.user} /var/run/postgresql \
+    && chown -R ${pkg.user}:${pkg:user} $PGLOG \
+    && chown -R ${pkg.user}:${pkg:user} /var/run/postgresql \
     && mkdir -p /data \
-    && chown -R ${pkg.user}:${pkg.user} /data \
-    && chown -R ${pkg.user}:${pkg.user} /var/log/${pkg.name} \
-    && chmod 555 ${pkg.installFolder}/bin/${pkg.name}.jar
+    && chown -R ${pkg:user}:${pkg:user} /data \
+    && chown -R ${pkg:user}:${pkg:user} /var/log/${pkg:name} \
+    && chmod 555 ${pkg.installFolder}/bin/${pkg:name}.jar
 
-USER ${pkg.user}
+USER ${pkg:user}
 
 EXPOSE 9090
 EXPOSE 1883

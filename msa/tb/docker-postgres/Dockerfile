@@ -33,7 +33,7 @@ ENV SPRING_DATASOURCE_PASSWORD=postgres
 
 ENV PGLOG=/var/log/postgres
 
-# COPY logback.xml ${pkg.name}.conf start-db.sh stop-db.sh start-tb.sh upgrade-tb.sh install-tb.sh ${pkg.name}.deb /tmp/
+COPY logback.xml ${pkg.name}.conf start-db.sh stop-db.sh start-tb.sh upgrade-tb.sh install-tb.sh ${pkg.name}.deb /tmp/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends wget gnupg2 \
